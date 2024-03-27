@@ -58,3 +58,57 @@ let rec list_max (lst: 'a list): 'a option =
 
 (* #trace list_max;; *)
 let () = list_max [1; 2; 30] |> get_val |> string_of_int |> print_endline;;
+(* let aList = [1;2;3;4;5] *)
+(* let aList2 = 1 :: 2 :: 3 :: 4 :: 5 :: [] *)
+let aList3 = [1] @ [2;3;4] @ [5]
+(* alist3 |> string_of_int |> print_endline *)
+let rec print_list = function
+  | [] -> ()
+  | h :: t -> print_int h; print_string " "; print_list t;;
+
+print_list aList3;;
+print_endline "";;
+
+
+let rec product = function
+  | [] -> 1
+  | h :: t -> h * product t
+
+ let () = product [1;2;3] |> string_of_int |> print_endline;;
+
+let rec concat = function
+  | [] -> ""
+  | h :: t -> h ^ concat t
+
+let () = concat ["a";"b";"c"] |> print_endline;;
+
+let isBigRed = function
+  | h :: _ -> h = "bigred"
+  | _ -> false
+
+let () = isBigRed ["bigred"] |> string_of_bool |> print_endline
+
+let rec list_length = function
+  | [] -> 0
+  | _ :: t -> 1 + list_length t;;
+(* let twoOrFour lst list_length = match list_length lst with
+  | m -> m = 2 || m = 4 *)
+
+let twoOrFour lst list_length = list_length lst = 2 || list_length lst = 4
+let () = twoOrFour ["a";"b";] list_length |> string_of_bool |> print_endline
+
+let twoOrFourB = function
+  | _ :: _ :: [] -> true
+  | _ :: _ :: _ :: _ :: [] -> true
+  | _ -> false;;
+
+let concatStr str1 str2 = str1 ^ ":" ^ " " ^ str2
+(* let concatTwoOrFourB = concatStr "twoOrFourB" *)
+
+let () = twoOrFourB ["a";"b"; "c"; "d"] |> string_of_bool |> concatStr "twoOrFourB" |> print_endline ;;
+
+let firstTwoEqual = function
+  | h1 :: h2 :: _ -> h1 = h2
+  | _ -> false;;
+
+let () = firstTwoEqual ["a";"a"] |> string_of_bool |> print_endline

@@ -1,2 +1,4 @@
-(test
- (name test_calculator))
+
+  (executable
+ (name test)
+ (libraries ounit2))
