@@ -1,3 +1,4 @@
+
 let num = 7 * (1 + 2 + 3);;
 num |> string_of_int |> print_endline;
 
@@ -112,3 +113,104 @@ let firstTwoEqual = function
   | _ -> false;;
 
 let () = firstTwoEqual ["a";"a"] |> string_of_bool |> print_endline
+let getFifthElement lst = match List.length lst with
+  | m -> if m >= 5 then List.nth lst 4 else 0
+
+let () = getFifthElement [1;2;3;4;20;30] |> string_of_int |> print_endline
+
+let sortDescendingOrder lst = List.sort Stdlib.compare lst |> List.rev
+
+let () = sortDescendingOrder [10;7;33;400] |> print_list;;
+print_endline "";;
+
+let getLastElement lst = List.nth lst (List.length lst - 1)
+let () = getLastElement [1;2;3;4;20;30] |> string_of_int |> print_endline
+
+let any_zeros lst = List.exists (fun x -> x = 0) lst
+let () = any_zeros [0;1;2;3] |> string_of_bool |> print_endline
+
+let rec take n lst = match List.length lst with
+  | m -> if m < n then lst else begin
+    match n with
+    | 0 -> []
+    | num -> begin
+      match lst with
+      | h :: t -> h :: take (num - 1) t
+      | [] -> []
+    end
+  end;;
+
+let () = take 10 [10;2;3;4;5] |> print_list;;
+print_endline "";;
+
+
+let rec drop n lst = match List.length lst with
+  | m -> if m < n then [] else begin
+    match n with
+    | 0 -> lst
+    | num -> begin
+      match lst with
+      | _ :: t -> drop (num - 1) t
+      | [] -> []
+    end
+  end;;
+
+let () = drop 2 [10;2;3;4;5] |> print_list;;
+print_endline "";;
+
+(* let rec from i j l = if i > j then l else from i (j - 1) (j :: l) *)
+
+(** [i -- j] is the list containing the integers from [i] to [j], inclusive. *)
+(* let ( -- ) i j = from i j [] *)
+
+(* let long_list = 0 -- 1_000_000 *)
+
+(* let () = drop 20000 long_list |> print_list *)
+(* let () = take 200000 long_list |> print_list *)
+
+let rec list_max2 = function
+| [] -> 0
+| h :: t -> max h (list_max2 t);;
+
+let () = list_max2 [1;2;3; 40; 27] |> string_of_int |> print_endline;;
+
+
+let rec isIncreasing = function
+  | [] -> true
+  | [_] -> true
+  | h1 :: h2 :: t -> h1 <= h2 && isIncreasing (h2 :: t)
+
+  let () = isIncreasing [1;2;3; 40] |> string_of_bool |> print_endline;;
+
+let rec isDecreasing = function
+  | [] -> true
+  | [_] -> true
+  | h1 :: h2 :: t -> h1 >= h2 && isDecreasing (h2 :: t)
+
+  let () = isDecreasing [ 27] |> string_of_bool |> print_endline;;
+
+
+ let findIndex f lst = List.find_index f lst |> fun x -> match x with
+  | Some x ->  x
+  | None -> -1;;
+
+  (* let () = findIndex (fun x -> x = 40) [1;2;3; 40; 27] |> print_endline;; *)
+
+  let rec divideListInTwo index = function
+    | [] -> ([], [])
+    | h :: t -> if index = 0 then ([], h :: t) else
+      let (a, b) = divideListInTwo (index - 1) t  in
+      (h :: a, b);;
+
+let () = divideListInTwo 0 [1;2;3; 40; 27] |> fun(tuple) -> match tuple with (a, _) -> print_list a;;
+
+
+let is_unimodal lst = match lst with
+  | [] -> true
+  | _ :: [] -> true
+  | _ :: _ :: _ -> begin
+    match list_max2 lst with
+    | m -> findIndex (fun x -> x = m) lst |> fun(i) -> divideListInTwo i lst |> fun (a, b) -> isIncreasing a && isDecreasing b
+  end;;
+
+let () = is_unimodal [1;2;3; 40; 27; 26] |> string_of_bool |> print_endline;;
