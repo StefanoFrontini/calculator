@@ -70,6 +70,10 @@ let rec print_list = function
 print_list aList3;;
 print_endline "";;
 
+let rec print_int_list = function
+| [] -> ()
+| h :: t -> print_endline (string_of_int h); print_int_list t
+
 
 let rec product = function
   | [] -> 1
@@ -113,8 +117,10 @@ let firstTwoEqual = function
   | _ -> false;;
 
 let () = firstTwoEqual ["a";"a"] |> string_of_bool |> print_endline
-let getFifthElement lst = match List.length lst with
-  | m -> if m >= 5 then List.nth lst 4 else 0
+(* let getFifthElement lst = match List.length lst with
+  | m -> if m >= 5 then List.nth lst 4 else 0 *)
+
+  let getFifthElement lst = if List.length lst >= 5 then List.nth lst 4 else 0
 
 let () = getFifthElement [1;2;3;4;20;30] |> string_of_int |> print_endline
 
@@ -202,7 +208,7 @@ let rec isDecreasing = function
       let (a, b) = divideListInTwo (index - 1) t  in
       (h :: a, b);;
 
-let () = divideListInTwo 0 [1;2;3; 40; 27] |> fun(tuple) -> match tuple with (a, _) -> print_list a;;
+let () = divideListInTwo 2 [1;2;3; 40; 27] |> fun(tuple) -> match tuple with (a, _) -> print_int_list a;;
 
 
 let is_unimodal lst = match lst with
@@ -214,3 +220,68 @@ let is_unimodal lst = match lst with
   end;;
 
 let () = is_unimodal [1;2;3; 40; 27; 26] |> string_of_bool |> print_endline;;
+
+let rec powerset: int list -> int list list = function
+  | [] -> [[]]
+  | [h] -> [[h]]
+  | h :: t -> let p = powerset t in List.map( fun x -> h :: x) (p) @ [h] :: p
+
+  let printListOfLists lst = List.iter (fun x -> print_list x; print_endline "") lst
+
+let () = powerset [1;2; 3] |> printListOfLists
+
+type student = {first_name : string; last_name : string; gpa : float}
+
+let aStudent = {first_name = "John"; last_name = "Doe"; gpa = 3.0}
+
+let studentName student = (student.first_name, student.last_name)
+
+let () = studentName aStudent |> fst |> print_endline;;
+let () = studentName aStudent |> snd |> print_endline;;
+let () = aStudent.gpa |> string_of_float |> print_endline;;
+
+let createStudent first_name last_name gpa = {first_name; last_name; gpa}
+
+let () = createStudent "Jane" "Dow" 4.0 |> studentName |> fst |> print_endline
+
+type poketype = Normal | Fire | Water
+type pokemon = {name : string; hp : int; ptype : poketype}
+
+let charizard = {name = "Charizard"; hp = 78; ptype = Fire}
+let () = charizard.ptype |> fun(x) -> begin match x with Normal -> "Normal" | Fire -> "Fire" | Water -> "Water" end |> print_endline;;
+
+
+let squirtle = {name = "Squirtle"; hp = 44; ptype = Water}
+let normalPokemon = {name = "Pikachu"; hp = 35; ptype = Normal}
+
+let () = normalPokemon.ptype |> fun(x) -> begin match x with Normal -> "Normal" | Fire -> "Fire" | Water -> "Water" end |> print_endline;;
+
+
+
+let safe_hd = function
+  | [] -> None
+  | h :: _ -> Some h
+
+let safe_tl = function
+  | [] -> None
+  | _ :: t -> Some t
+
+  let () = safe_tl [1;2;3] |> get_val |> print_int_list;;
+  print_endline "-----------------";;
+  let () = safe_hd [1;2;3] |> get_val |> string_of_int |> print_endline;;
+
+  (* Write a function max_hp : pokemon list -> pokemon option that, given a list of pokemon, finds the Pokémon with the highest HP. *)
+
+let max_hp = function
+  | [] -> None
+  | h :: t -> Some (List.fold_left (fun a b -> if a.hp > b.hp then a else b) h t)
+
+
+(* let max_hp = function
+  | [] -> None
+  | h :: t -> Some (List.fold_left max h t) *)
+
+let pokemons = [charizard; squirtle; normalPokemon]
+
+let () = max_hp pokemons |> get_val |> fun x -> x.name |>  print_endline
+(* let () = max_hp pokemons |> get_val |>  print_endline *)
