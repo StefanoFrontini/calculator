@@ -221,10 +221,15 @@ let is_unimodal lst = match lst with
 
 let () = is_unimodal [1;2;3; 40; 27; 26] |> string_of_bool |> print_endline;;
 
-let rec powerset: int list -> int list list = function
+let rec powerset = function
+  | [] -> [ [] ]
+  | x :: s -> let p = powerset s in
+    List.map (List.cons x) p @ p
+
+(* let rec powerset: int list -> int list list = function
   | [] -> [[]]
   | [h] -> [[h]]
-  | h :: t -> let p = powerset t in List.map( fun x -> h :: x) (p) @ [h] :: p
+  | h :: t -> let p = powerset t in List.map( fun x -> h :: x) p @ [h] :: p *)
 
   let printListOfLists lst = List.iter (fun x -> print_list x; print_endline "") lst
 
@@ -272,10 +277,16 @@ let safe_tl = function
 
   (* Write a function max_hp : pokemon list -> pokemon option that, given a list of pokemon, finds the Pokémon with the highest HP. *)
 
-let max_hp = function
+(* let max_hp = function
   | [] -> None
-  | h :: t -> Some (List.fold_left (fun a b -> if a.hp > b.hp then a else b) h t)
-
+  | h :: t -> Some (List.fold_left (fun a b -> if a.hp > b.hp then a else b) h t) *)
+let rec max_hp = function
+  | [] -> None
+  | poke1::t -> begin
+      match max_hp t with
+      | None -> Some poke1
+      | Some poke2 -> Some (if poke1.hp >= poke2.hp then poke1 else poke2)
+    end
 
 (* let max_hp = function
   | [] -> None
@@ -285,3 +296,7 @@ let pokemons = [charizard; squirtle; normalPokemon]
 
 let () = max_hp pokemons |> get_val |> fun x -> x.name |>  print_endline
 (* let () = max_hp pokemons |> get_val |>  print_endline *)
+
+let is_before ((year, month, day): int * int * int) ((year2, month2, day2): int * int * int): bool = if year < year2 then true else if year = year2 && month < month2 then true else if year = year2 && month = month2 && day < day2 then true else false
+
+let () = is_before (2000, 1, 3) (2000, 1, 2) |> string_of_bool |> print_endline
