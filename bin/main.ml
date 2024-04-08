@@ -300,3 +300,41 @@ let () = max_hp pokemons |> get_val |> fun x -> x.name |>  print_endline
 let is_before ((year, month, day): int * int * int) ((year2, month2, day2): int * int * int): bool = if year < year2 then true else if year = year2 && month < month2 then true else if year = year2 && month = month2 && day < day2 then true else false
 
 let () = is_before (2000, 1, 3) (2000, 1, 2) |> string_of_bool |> print_endline
+
+let rec earliest  = function
+  | [] -> None
+  | h :: t -> begin
+    match earliest t with
+    | None -> Some h
+    | Some x -> Some ( if is_before h x then h else x)
+  end
+
+let () = earliest [(2000, 1, 3); (1999, 1, 2); (2000, 1, 1)] |> get_val |> fun x -> let (year, month, day) = x in Printf.printf "%d-%d-%d\n" year month day
+
+let insert k v lst = (k, v) :: lst
+
+let rec lookup k = function
+| [] -> None
+| (k', v) :: t -> if k = k' then Some v else lookup k t
+
+let () = insert 1 "one" [] |> insert 2 "two" |> insert 3 "three" |> List.iter (fun (k, v) -> Printf.printf "%d: %s\n" k v)
+
+let () = lookup 2 [(1, "one"); (2, "two"); (3, "three")] |> get_val |> print_endline;;
+
+let () = lookup 3 [(1, "one"); (2, "two"); (3, "three")] |> get_val |> print_endline;;
+
+(* type suit = Hearts | Diamonds | Clubs | Spades
+type rank = Number of int | Ace | Jack | Queen | King
+type card = {suit : suit; rank : rank} *)
+
+(* let aceofClubs = {suit = Clubs; rank = Ace};;
+let queenOfHearts = {suit = Hearts; rank = Queen}
+let twoOfDiamonds = {suit = Diamonds; rank = Number 2}
+let sevenOfSpades = {suit = Spades; rank = Number 7} *)
+
+
+let findMatch = function
+  | [Some x; _] -> [Some(x)]
+  | _ -> []
+
+let () = findMatch [None; Some(2)] |> List.iter (fun x -> Printf.printf "%d\n" (get_val x))
