@@ -338,3 +338,271 @@ let findMatch = function
   | _ -> []
 
 let () = findMatch [None; Some(2)] |> List.iter (fun x -> Printf.printf "%d\n" (get_val x))
+
+type quad = I | II | III | IV
+type sign = Neg | Zero | Pos
+
+let sign (x: int): sign = if x < 0 then Neg else if x = 0 then Zero else Pos
+(* let sign (x:int): sign = match x with
+  | x when x < 0 -> Neg
+  | x when x = 0 -> Zero
+  | _ -> Pos *)
+
+(* let sign (x:int): sign = match x with
+  | x -> if x < 0 then Neg else if x = 0 then Zero else Pos *)
+
+let quadrant: int*int -> quad option = fun (x,y) -> match (sign x, sign y) with
+  | (Pos, Pos) -> Some I
+  | (Neg, Pos) -> Some II
+  | (Neg, Neg) -> Some III
+  | (Pos, Neg) -> Some IV
+  | _ -> None
+
+ let print_quad = function
+   | Some x -> Printf.printf "%s\n" (match x with
+     | I -> "I"
+     | II -> "II"
+     | III -> "III"
+     | IV -> "IV")
+   | None -> failwith "??"
+   let () = quadrant (-1,1) |> print_quad
+
+
+  (* let quadrant ((x, y): (int*int)): quad option = match (sign x, sign y) with
+    | (Pos, Pos) -> Some I
+    | (Neg, Pos) -> Some II
+    | (Neg, Neg) -> Some III
+    | (Pos, Neg) -> Some IV
+    | _ -> None *)
+
+let quadrant_when: int*int -> quad option = function
+      | (x, y) when x > 0 && y > 0 -> Some I
+      | (x, y) when x < 0 && y > 0 -> Some II
+      | (x, y) when x < 0 && y < 0 -> Some III
+      | (x, y) when x > 0 && y < 0 -> Some IV
+      | _ -> None
+
+let () = quadrant_when (1,1) |> print_quad
+
+type 'a tree =
+ | Leaf
+ | Node of 'a * 'a tree * 'a tree
+
+let t =
+  Node(2, Node(1, Leaf, Leaf), Node(3, Leaf, Leaf))
+
+  let t2 = Node(2, Node(10, Leaf, Node(4, Leaf, Leaf)), Node(3, Leaf, Leaf))
+
+let rec size = function
+  | Leaf -> 0
+  | Node(_, l, r) -> 1 + size l + size r
+
+let () = size t |> string_of_int |> print_endline
+
+let rec sum = function
+  | Leaf -> 0
+  | Node(v, l, r) -> v + sum l + sum r
+
+let () = sum t |> string_of_int |> print_endline
+
+let rec depth = function
+  | Leaf -> 0
+  | Node(_, l, r) -> 1 + max (depth l) (depth r)
+
+let () = depth t |> string_of_int |> print_endline
+
+let rec same_shape t1 t2 = match t1, t2 with
+  | Leaf, Leaf -> true
+  | Node(_, l1, r1), Node(_, l2, r2) -> (same_shape l1 l2) && (same_shape r1 r2)
+  | _ -> false
+
+let () = same_shape t t2 |> string_of_bool |> print_endline
+
+(* let rec list_max3 = function
+  | [] -> failwith "list_max"
+  | h :: t -> begin match t with
+   | [] -> 0
+   | _ -> max h (list_max3 t)
+end *)
+
+(* let list_max3 lst = if lst = [] then failwith "list_max" else let rec list_max4 = function
+  | [] -> 0
+  | h :: t -> max h (list_max4 t)
+in list_max4 lst *)
+ let rec get_list_max x = function
+ | [] -> x
+ | h :: t -> get_list_max (max x h) t
+
+let list_max3 = function
+  | [] -> failwith "list_max"
+  | h :: t -> get_list_max h t
+
+let () = list_max3 [1;23;3] |> string_of_int |> print_endline
+
+let list_max_string = function
+  | [] -> "empty"
+  | h :: t -> string_of_int (get_list_max h t)
+
+let () = list_max_string [1;23;3] |> print_endline
+
+let rec helper_max : int tree -> int = function
+ | Leaf -> 0
+ | Node(v, l, r) -> max (max v (helper_max l)) (helper_max r)
+
+ let () = helper_max t2 |> string_of_int |> print_endline
+
+ let rec helper_min (min_value:int) : int tree -> int = function
+ | Leaf -> min_value
+ | Node(v, l, r) -> min (min v (helper_min v l)) (helper_min v r)
+
+ let is_bst_invariant : int tree -> bool = function
+  | Node(v,l,r) -> if v > helper_max l && v < helper_min v r then true else false
+  | _ -> true
+
+  let () = is_bst_invariant t |> string_of_bool |> print_endline
+
+(* let sign_poly x: [> `Pos | `Zero | `Neg ]  = if x > 0 then `Pos else if x < 0 then `Neg else `Zero
+
+let quadrant_poly (x,y): [> `I | `II | `III | `IV ] option = match sign_poly x, sign_poly y with
+  | `Pos, `Pos -> Some `I
+  | `Neg, `Pos -> Some `II
+  | `Neg, `Neg -> Some `III
+  | `Pos, `Neg -> Some `IV
+  | _ -> None *)
+
+
+  (* High-Order Functions *)
+
+  (* let double x = 2 * x
+
+  let quad x = double (double x)
+  let fourth x = square (square x)
+
+  let twice f x = f (f x) *)
+  let square x = x * x
+
+  let twice f x = f (f x)
+  let () = twice square 3 |> string_of_int |> print_endline
+
+  (* let repeat f n x =
+    let rec loop i acc = if i > n then acc else loop (i + 1) (f acc) in loop 1  x;; *)
+let rec repeat f n x = if n = 0 then x else repeat f (n - 1) (f x)
+
+    let () = repeat square 2 3 |> string_of_int |> print_endline
+
+    let product_left = List.fold_left ( *. ) 1.0
+
+    let () = product_left [1.;2.;30.] |> string_of_float |> print_endline
+
+    (* let product_right lst = List.fold_right ( *. ) lst 1.0 *)
+
+
+    let product_right = ListLabels.fold_right ~f:( *. ) ~init:1.0
+
+    let () = product_right [1.;2.;40.] |> string_of_float |> print_endline
+
+    let rec ( -- ) i j = if i > j then [] else i :: i + 1 -- j
+
+    (* let sum_cube_odd n =
+      let l = 0 -- n in
+      let odds_only = List.filter (fun x -> x mod 2 = 1) l in
+      let odd_cubes = List.map (fun x -> x * x * x) odds_only in
+      List.fold_left ( + ) 0 odd_cubes *)
+
+    let sum_cube_odd n =
+      0 -- n
+      |> List.filter (fun x -> x mod 2 = 1)
+      |> List.map (fun x -> x * x * x)
+      |> List.fold_left ( + ) 0
+
+    let () = sum_cube_odd 5 |> string_of_int |> print_endline
+
+    let rec exists_rec p = function
+      | [] -> false
+      | h :: t ->  p h || exists_rec p t
+
+    let () = exists_rec (fun x -> x = 40) [1;2;3; 40; 27] |> string_of_bool |> print_endline
+
+    (* let exists_fold p lst = List.fold_right (fun x acc -> if p x then true else acc) lst false *)
+
+    let exists_fold p lst = List.fold_left (fun acc el -> acc || p el) false lst
+
+    let () = exists_fold (fun x -> x = 40) [1;2;3; 40; 27] |> string_of_bool |> print_endline
+
+    let exists_lib p lst = if List.filter (fun x -> p x = true) lst = [] then false else true
+
+    let () = exists_lib (fun x -> x = 40) [1;2;3; 41; 27] |> string_of_bool |> print_endline
+
+    let exists_lib2 = List.exists
+
+    let () = exists_lib2 (fun x -> x = 40) [1;2;3; 41; 27] |> string_of_bool |> print_endline
+
+    let rec account_balance_rec balance = function
+      | [] -> balance
+      | h :: t ->  account_balance_rec (balance - h) t
+
+      let () = account_balance_rec 100 [40; 20] |> string_of_int |> print_endline
+
+    (* let account_balance_left  = List.fold_left (fun acc el -> acc - el) *)
+    let account_balance_left  = List.fold_left ( - )
+
+    let () = account_balance_left 100 [40; 20] |> string_of_int |> print_endline
+
+    let account_balance_right = List.fold_right (fun el acc -> acc - el)
+    (* let account_balance_right balance debits = List.fold_right ( - ) debits balance
+    wrong: (40 - (20 - 100))
+
+    *)
+
+    let () = account_balance_right [40; 20] 100 |> string_of_int |> print_endline
+
+    let uncurried_nth (lst, n) = List.nth lst n
+
+    let () = uncurried_nth ([10;20;30], 0) |> string_of_int |> print_endline
+
+    let uncurried_append (lst1, lst2) = List.append lst1 lst2
+
+    let () = uncurried_append ([1;2;3], [4;5;6]) |> print_list;;
+    print_endline "";;
+
+    let uncurried_char_compare (c1, c2) = Char.compare c1 c2
+
+    let () = uncurried_char_compare ('a', 'a') |> string_of_int |> print_endline
+
+    let uncurried_max (x, y) = Stdlib.max x y
+
+    let () = uncurried_max (40, 20) |> string_of_int |> print_endline
+
+    let map_composition f g lst = List.map (fun x -> f (g x)) lst
+    (* let map_composition f g lst = List.map (fun x -> x |> g |> f) lst *)
+
+    let () = map_composition (fun x -> x + 1) (fun x -> x * 2) [1;2;3] |> print_list;;
+
+    print_endline ""
+    let elementsGreaterThanThree = List.filter (fun x -> String.length x > 3)
+    let printListOfStrings = List.iter (fun x -> print_endline x)
+
+    let () = elementsGreaterThanThree ["hello"; "world"; "ab"] |> printListOfStrings;;
+    print_endline ""
+
+    let addOneToListOfFLoats = List.map (fun x -> x +. 1.0)
+
+    let printListOfFloats = List.iter (fun x -> print_float x; print_endline "")
+
+    let () = addOneToListOfFLoats [1.0; 2.0; 3.0] |> printListOfFloats;;
+
+    (* let concatListofStrWithSep strs sep = List.fold_left (fun acc str -> if acc = "" then str else acc ^ sep ^ str) "" strs *)
+
+    let concatListOfStrWithSep strs sep =
+      match strs with
+      | [] -> ""
+      | x :: xs -> List.fold_left (fun acc str ->  acc ^ sep ^ str) x xs
+
+    let () = concatListOfStrWithSep ["hello"; "world"] "-" |> print_endline
+
+    let uniqueKeys (lst: ('a * 'b) list) : 'a list = lst |> List.rev_map (fst) |> List.sort_uniq Stdlib.compare
+
+    (* let printAssociationList (lst: (string * 'b) list) = List.iter (fun x -> print_string (fst x)) lst;; *)
+
+
+    let () = uniqueKeys [("a", 1); ("b", 2); ("c", 3); ("a", 2)] |> printListOfStrings
