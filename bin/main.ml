@@ -1,4 +1,3 @@
-
 let num = 7 * (1 + 2 + 3);;
 num |> string_of_int |> print_endline;
 
@@ -606,3 +605,70 @@ let rec repeat f n x = if n = 0 then x else repeat f (n - 1) (f x)
 
 
     let () = uniqueKeys [("a", 1); ("b", 2); ("c", 3); ("a", 2)] |> printListOfStrings
+
+    (* let is_valid_matrix (lst: int list list) = match lst with
+      | [] -> false
+      | h :: t -> let head_length = List.length h in
+        begin
+          match t with
+          | [] -> false
+          | _ -> List.for_all (fun x -> List.length x = head_length) t
+        end *)
+
+let is_valid_matrix (lst: int list list) = match lst with
+  | [] -> false
+  | h :: t -> h |> List.length |> fun head_length ->
+      head_length > 0 &&
+      List.for_all (fun x -> List.length x = head_length) t
+
+let () = is_valid_matrix [[]; []] |> string_of_bool |> print_endline
+
+(* let add_row_vectors v1 v2 = List.map2 (fun x y -> x + y) v1 v2 *)
+let add_row_vectors  = List.map2 ( + )
+
+let () = add_row_vectors [1; 2; 3] [4; 5; 6] |> print_list;;
+print_endline ""
+
+let add_matrices = List.map2 add_row_vectors
+
+let print_matrix = List.iter (fun x -> print_list x; print_endline "")
+
+let () = add_matrices [[1; 2; 3]; [4; 5; 6]] [[7; 8; 9]; [10; 11; 12]] |> print_matrix
+
+let dot_product v1 v2 = List.fold_left ( + ) 0 (List.map2 ( * ) v1 v2)
+
+let () = dot_product [1; 2; 3] [4; 5; 6] |> string_of_int |> print_endline
+
+let rec matrix_to_list (lst: int list list) index = match lst with
+  | [] -> []
+  | h :: t -> match h with
+    | [] -> []
+    | _ -> List.nth h index :: matrix_to_list t index
+
+let () = matrix_to_list [[1; 2; 3]; [4; 5; 6]] 0 |> print_list;;
+print_endline ""
+
+(* let matrix_transposition (lst: int list list) : int list list = match lst with
+  | [] -> []
+  | h :: _ -> match List.length h with
+    | 0 -> []
+    | _ -> let rec loop i acc = if i > (List.length h) - 1 then List.rev acc else loop (i+1) (  matrix_to_list lst i :: acc) in loop 0 [];;
+
+let () = matrix_transposition [[1; 2; 3]; [4; 5; 6]] |> print_matrix
+
+let multiply_matrices m1 m2 =
+  List.map(fun row -> List.map( dot_product row ) (matrix_transposition m2)) m1 *)
+
+
+(* let transpose ls =
+  let rec transpose' acc = function
+    | [] | [] :: _ -> List.rev acc
+    | ls -> transpose' (List.map List.hd ls :: acc) (List.map List.tl ls)
+  in transpose' [] ls
+
+let dot = List.fold_left2 (fun acc x y -> acc + x * y) 0
+
+let multiply_matrices m1 m2 =
+  List.map (fun row -> List.map (dot row) (transpose m2)) m1
+
+  let () = multiply_matrices [[1; 2; 3]; [4; 5; 6]] [[7; 8; 9]; [10; 11; 12]] |> print_matrix *)
