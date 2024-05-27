@@ -985,5 +985,22 @@ end
 module Fraction: Fraction = struct
   type t = int * int
 
-  (* let make t  *)
+  let make n d =
+    assert (d != 0);
+    (n, d)
+
+  let numerator (n, _) = n
+
+  let denominator (_, d) = d
+
+  let to_string f = string_of_int(fst f) ^ " / " ^ string_of_int(snd f)
+
+  let to_float f = (float_of_int(fst f)) /. (float_of_int(snd f))
+
+  let add (n1, d1) (n2, d2) =
+    let d' = d1 * d2 in
+    (n1 * d2 + n2 * d1, d')
+
+  let mul a b = (fst a * fst b, snd a * snd b)
+
 end
