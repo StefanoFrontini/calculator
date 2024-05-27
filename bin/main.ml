@@ -66,6 +66,7 @@ let rec print_list = function
   | [] -> ()
   | h :: t -> print_int h; print_string " "; print_list t;;
 
+
 print_list aList3;;
 print_endline "";;
 
@@ -672,3 +673,317 @@ let multiply_matrices m1 m2 =
   List.map (fun row -> List.map (dot row) (transpose m2)) m1
 
   let () = multiply_matrices [[1; 2; 3]; [4; 5; 6]] [[7; 8; 9]; [10; 11; 12]] |> print_matrix *)
+
+  (* Turn off unused value declaration warnings *)
+
+
+
+  module [@warning "-34"; ] [@warning "-32"] MyList = struct
+
+  type 'a myList =
+     | Nil
+     | Cons of 'a * 'a myList
+
+  let rec map f = function
+     | Nil -> Nil
+     | Cons (h, t) -> Cons (f h, map f t)
+
+  let rec print_list = function
+     | Nil -> ()
+     | Cons (h, t) -> print_int h; print_string " "; print_list t;;
+
+  end
+
+  module [@warning "-34"; ] [@warning "-32"] Tree = struct
+
+  type 'a tree =
+     | Leaf
+     | Node of 'a * 'a tree * 'a tree
+
+  let rec map f = function
+     | Leaf -> Leaf
+     | Node (v, l, r) -> Node (f v, map f l, map f r)
+
+
+  end
+
+
+  let lst = MyList.map succ (Cons (1, Nil))
+
+  let () = lst |> MyList.print_list
+
+module [@warning "-34"; ] [@warning "-32"] MyStack = struct
+  type 'a stack =
+     | Empty
+     | Entry of 'a * 'a stack
+
+  let empty = Empty
+
+  let push x s =
+    Entry (x, s)
+
+  let peek = function
+     | Empty -> failwith "Empty"
+     | Entry (x,_) -> x
+
+  let pop = function
+     | Empty -> failwith "Empty"
+     | Entry (_, s) -> s
+end
+
+module type [@warning "-34"; ] [@warning "-32"] LIST_STACK = sig
+  type 'a stack = 'a list
+  val empty: 'a list
+  val push: 'a -> 'a stack -> 'a stack
+
+  val peek: 'a stack -> 'a
+
+  val pop: 'a stack -> 'a stack
+
+  val pp :
+    (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a stack -> unit
+end
+module [@warning "-34"; ] [@warning "-32"] ListStack: LIST_STACK = struct
+  type 'a stack = 'a list
+
+  let empty = []
+
+  let push x s =
+    x :: s
+
+  let peek = function
+    | [] -> failwith "Empty"
+    | x :: _ -> x
+
+  let pop = function
+    | [] -> failwith "Empty"
+    | _ :: s -> s
+
+  let pp pp_val fmt s =
+    let open Format in
+    let pp_break fmt () = fprintf fmt "@," in
+    fprintf fmt "@[<v 0>top of stack";
+    if s <> [] then fprintf fmt "@,";
+    pp_print_list ~pp_sep:pp_break pp_val fmt s;
+    fprintf fmt "@,bottom of stack@]"
+
+end
+
+let s = ListStack.empty
+
+(* let () = s |> ListStack.(pp Format.fprintf Format.std_formatter) *)
+let s' = ListStack.push 33 s
+
+let () = s' |> print_list
+
+let x = ListStack.peek s'
+
+let () = x |> print_int;;
+
+print_endline "";;
+
+let s'' = ListStack.(empty |> push 1 |> push 2 )
+
+let () = s'' |> print_list;;
+
+print_endline "";;
+
+module type [@warning "-34"; ] [@warning "-32"] Queue = sig
+  type 'a t
+
+  exception Empty
+
+  val empty : 'a t
+
+  val is_empty : 'a t -> bool
+
+  val enqueue : 'a -> 'a t -> 'a t
+
+  val front : 'a t -> 'a
+
+  val dequeue : 'a t -> 'a t
+
+  val size : 'a t -> int
+
+  val to_list : 'a t -> 'a list
+end
+
+module [@warning "-34"; ] [@warning "-32"] ListQueue2 : Queue = struct
+  type 'a t = 'a list
+
+  exception Empty
+
+  let empty = []
+
+  let is_empty = function
+    | [] -> true
+    | _ -> false
+
+  let enqueue x q = q @ [x]
+
+  let front = function
+    | [] -> raise Empty
+    | x :: _ -> x
+
+  let dequeue = function
+    | [] -> raise Empty
+    | _ :: q -> q
+
+  let size = List.length
+
+  let to_list = Fun.id
+end
+
+let () = ListQueue2.(empty |> enqueue 1 |> enqueue 2 |> enqueue 3 |> to_list) |> print_list;;
+
+print_endline ""
+
+let queue = ListQueue2.(empty |> enqueue 5 |> enqueue 6 |> enqueue 7 |> enqueue 8);;
+let front = ListQueue2.(queue |> front);;
+front |> print_int;;
+
+print_endline "";;
+
+let () = ListQueue2.(queue |> to_list) |> print_list;;
+
+print_endline "";;
+
+(* let dequeue2 = ListQueue2.(queue |> dequeue);; *)
+
+ListQueue2.(queue |> dequeue |> to_list) |> print_list;;
+
+module BatchedQueue : Queue = struct
+  type 'a t = {o : 'a list; i : 'a list}
+
+  exception Empty
+
+  let empty = {o = []; i = []}
+
+  let is_empty = function
+    | {o = []; _} -> true
+    | _ -> false
+
+  let enqueue x = function
+    | {o = []; _} -> {o = [x]; i = []}
+    | {o; i} -> {o; i = x :: i}
+    (* | q -> {q with i = x :: q.i} *)
+
+  let front = function
+    | {o = []; _} -> raise Empty
+    | {o = h :: _; _} -> h
+
+  let dequeue = function
+    | {o = []; _} -> raise Empty
+    | {o = [_]; i} -> {o = List.rev i; i = []}
+    | {o = _ :: t; i} -> {o = t; i}
+
+  let size {o; i} = List.(length o + length i)
+
+  let to_list {o; i} = o @ List.rev i
+end
+
+
+
+  module type [@warning "-32"] ComplexSig = sig
+    type t = float * float
+    val zero : t
+    val add : t -> t -> t
+  end
+
+
+  module Complex : ComplexSig = struct
+    type t = float * float
+    let zero = (0., 0.)
+    let add (r1, i1) (r2, i2) = r1 +. r2, i1 +. i2
+  end
+
+  module [@warning "-34"; ] [@warning "-32"] ListQueue = struct
+    type 'a queue = 'a list
+
+    let empty = []
+
+    let is_empty q = q = []
+
+    let enqueue x q = q @ [x]
+
+    let peek = function
+    | [] -> None
+    | x :: _ -> Some x
+
+    let dequeue = function
+    | [] -> None
+    | _ :: q -> Some q
+  end
+
+
+  (** Creates a ListQueue filled with [n] elements. *)
+let fill_listqueue n =
+  let rec loop n q =
+    if n = 0 then q
+    else loop (n - 1) (ListQueue.enqueue n q) in
+  loop n ListQueue.empty
+
+
+  let () = fill_listqueue 10 |> print_int_list;;
+  print_endline "";;
+
+(* module type BST = sig
+  type ('k, 'v) t
+  val add : 'k -> 'v -> ('k, 'v) t
+end *)
+
+module [@warning "-34"; ] [@warning "-32"] BstMap = struct
+ type ('k, 'v) tree =
+  | Leaf
+  | Node of ('k * 'v) * ('k, 'v) tree * ('k, 'v) tree
+
+  let empty = Leaf
+
+  let rec insert k v = function
+   | Leaf -> Node((k, v), Leaf, Leaf)
+   | Node((k', v'), l, r) -> if (k = k') then Node((k, v), l, r)
+      else if (k < k') then Node((k', v'), insert k v l, r) else Node((k',v'), l, insert k v r)
+
+  let rec lookup k = function
+    | Leaf -> failwith "Not_found"
+    | Node((k', v'), l, r) -> if (k = k') then v' else if (k < k') then lookup k l else lookup k r
+
+  let rec to_list = function
+    | Leaf -> []
+    | Node((k, v), l, r) ->  to_list l @ [(k, v)] @ to_list r
+
+end;;
+
+print_endline "BST";;
+let bst1 = BstMap.(empty |> insert 5 "five" |> insert 6 "six" |> insert 7 "seven" |> insert 8 "eight" |> insert 9 "nine" |> insert 10 "ten" |> to_list);;
+
+let print_association_list = List.iter (fun (k, v) -> Printf.printf "%d: %s\n" k v)
+
+
+let () = print_association_list bst1
+
+(* let print_tuple (k, v) = Printf.printf "%d: %s\n" k v *)
+
+let () = BstMap.(empty |> insert 5 "five" |> insert 6 "six" |> insert 7 "seven" |> insert 8 "eight" |> insert 9 "nine" |> insert 10 "ten" |> lookup 5 |> print_string)
+
+module type Fraction = sig
+  (* A fraction is a rational number p/q, where q != 0. *)
+  type t
+
+  (** [make n d] is n/d. Requires d != 0. *)
+  val make : int -> int -> t
+
+  val numerator : t -> int
+  val denominator : t -> int
+  val to_string : t -> string
+  val to_float : t -> float
+
+  val add : t -> t -> t
+  val mul : t -> t -> t
+end
+
+module Fraction: Fraction = struct
+  type t = int * int
+
+  (* let make t  *)
+end
