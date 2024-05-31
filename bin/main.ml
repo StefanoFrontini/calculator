@@ -966,7 +966,7 @@ let () = print_association_list bst1
 
 let () = BstMap.(empty |> insert 5 "five" |> insert 6 "six" |> insert 7 "seven" |> insert 8 "eight" |> insert 9 "nine" |> insert 10 "ten" |> lookup 5 |> print_string)
 
-module type Fraction = sig
+module type [@warning "-34"; ] [@warning "-32"] Fraction = sig
   (* A fraction is a rational number p/q, where q != 0. *)
   type t
 
@@ -982,7 +982,7 @@ module type Fraction = sig
   val mul : t -> t -> t
 end
 
-module Fraction: Fraction = struct
+module [@warning "-34"; ] [@warning "-32"] Fraction: Fraction = struct
   type t = int * int
 
   let make n d =
@@ -1004,3 +1004,86 @@ module Fraction: Fraction = struct
   let mul a b = (fst a * fst b, snd a * snd b)
 
 end
+
+module [@warning "-34"; ] [@warning "-32"] FractionReduced: Fraction = struct
+  type t = int * int
+
+  (** [gcd x y] is the greatest common divisor of [x] and [y].
+  Requires: [x] and [y] are positive. *)
+  let rec gcd x y =
+    if x = 0 then y
+    else if (x < y) then gcd (y - x) x
+    else gcd y (x - y)
+
+  let make n d =
+    assert (d > 0);
+    let d' = gcd n d in
+    (n / d', d / d')
+
+  let numerator (n, _) = n
+
+  let denominator (_, d) = d
+
+  let to_string f = string_of_int(fst f) ^ " / " ^ string_of_int(snd f)
+
+  let to_float f = (float_of_int(fst f)) /. (float_of_int(snd f))
+
+  let add (n1, d1) (n2, d2) =
+    assert(d1 > 0 && d2 > 0);
+    let n' = n1 * d2 + n2 * d1 in
+    let d' = d1 * d2 in
+    let d'' = gcd n' d' in
+    (n' / d'', d' / d'')
+    (* let d' = d1 * d2 in
+    (n1 * d2 + n2 * d1, d')
+    let (n, d) = d' in
+    let d'' = gcd n d in
+    (n / d'', d / d'');; *)
+
+
+  let mul a b =
+    let (n1, d1) = a in
+    let (n2, d2) = b in
+    let d' = gcd n1 d1 in
+    let d'' = gcd n2 d2 in
+
+    (fst a * fst b / d', snd a * snd b / d'')
+
+
+end;;
+
+print_endline " ";;
+
+module CharMap = Map.Make(Char);;
+let aMap = CharMap.(empty |> add 'A' "Alpha" |> add 'E' "Echo" |> add 'S' "Sierra" |> add 'V' "Victor");;
+
+(* let findE = CharMap.find 'E' aMap;; *)
+
+let removeA = CharMap.remove 'A' aMap;;
+
+assert (CharMap.mem 'A' removeA = false)
+
+let convertMapToAssocList = CharMap.bindings removeA
+
+let print_char_association_list = List.iter (fun x -> print_char (fst x); print_string " " ; print_endline (snd x))
+
+let () = print_char_association_list convertMapToAssocList;;
+
+print_endline " ";;
+
+type date = {month : int; day : int}
+
+module Date = struct
+  type t = date
+
+  let compare a b = if a.month = b.month then a.day - b.day else a.month - b.month
+end
+
+module DateMap = Map.Make(Date)
+
+type calendar = string DateMap.t
+
+
+
+let cal = DateMap.(empty |> add {month = 1; day = 2} "Birthday" |> add {month = 2; day = 3})
+
