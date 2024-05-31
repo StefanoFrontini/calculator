@@ -1085,5 +1085,20 @@ type calendar = string DateMap.t
 
 
 
-let cal = DateMap.(empty |> add {month = 1; day = 2} "Birthday" |> add {month = 2; day = 3})
+let my_cal: calendar = DateMap.(empty |> add {month = 1; day = 2} "Birthday" |> add {month = 2; day = 3} "anniversary")
 
+(* let f key value = print_int key.month; print_int key.day; print_string value *)
+let print_calendar cal  = DateMap.(cal |> iter (fun date event -> Printf.printf "%d/%d: %s\n" date.month date.day event))
+let () = print_calendar my_cal;;
+
+print_endline "";;
+
+
+let is_for (m: string CharMap.t): string CharMap.t  = CharMap.(m |> mapi (fun key value -> Printf.sprintf "%c is for %s" key value ))
+
+let () = is_for aMap |> CharMap.bindings |> print_char_association_list
+
+
+let first_after  (d: Date.t) (c: calendar) = DateMap.(let right (_, _, r) = r in c |> split d |> right |> min_binding |> snd )
+
+let () =  my_cal |> first_after {month=3; day=3} |> print_string
