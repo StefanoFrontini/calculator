@@ -1117,6 +1117,8 @@ module CisSet = Set.Make(StringSet)
 
 let () = CisSet.(equal (of_list ["grr"; "argh"]) (of_list ["GRR"; "aRgh"])) |> string_of_bool |> print_string;;
 
+print_endline "";;
+
 module type ToString = sig
   type t
 
@@ -1125,7 +1127,7 @@ module type ToString = sig
 end
 
 module Print = functor (M : ToString) -> struct
-  let print x = M.to_string x
+  let print x = print_string (M.to_string x)
 end
 
 module Int = struct
@@ -1136,4 +1138,17 @@ end
 
 module PrintInt = Print(Int)
 
-let () = PrintInt.(print 1) |> print_string
+let () = PrintInt.(print 1);;
+
+print_endline "";;
+
+module MyString = struct
+  type t = string
+
+  let to_string x = x
+end
+
+
+module PrintString = Print(MyString)
+
+let () = PrintString.print "stefano"
