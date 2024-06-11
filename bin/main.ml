@@ -1101,4 +1101,39 @@ let () = is_for aMap |> CharMap.bindings |> print_char_association_list
 
 let first_after  (d: Date.t) (c: calendar) = DateMap.(let right (_, _, r) = r in c |> split d |> right |> min_binding |> snd )
 
-let () =  my_cal |> first_after {month=3; day=3} |> print_string
+let () =  my_cal |> first_after {month=2; day=1} |> print_string;;
+
+print_endline "";;
+
+module StringSet = struct
+  type t = string
+
+  let compare s1 s2 = String.compare (String.lowercase_ascii s1) (String.lowercase_ascii s2)
+
+
+end
+
+module CisSet = Set.Make(StringSet)
+
+let () = CisSet.(equal (of_list ["grr"; "argh"]) (of_list ["GRR"; "aRgh"])) |> string_of_bool |> print_string;;
+
+module type ToString = sig
+  type t
+
+  val to_string :  t -> string
+
+end
+
+module Print = functor (M : ToString) -> struct
+  let print x = M.to_string x
+end
+
+module Int = struct
+  type t = int
+
+  let to_string = string_of_int
+end
+
+module PrintInt = Print(Int)
+
+let () = PrintInt.(print 1) |> print_string
