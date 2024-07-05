@@ -1,3 +1,2 @@
-(library
- (public_name calculator)
- )
+ (library
+ (name lib))

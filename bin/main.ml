@@ -1151,4 +1151,24 @@ end
 
 module PrintString = Print(MyString)
 
-let () = PrintString.print "stefano"
+let () = PrintString.print "stefano";;
+
+print_endline "";;
+
+module StringWithPrint = struct
+  include String
+  include Print(MyString)
+end
+
+let () = StringWithPrint.(sub "stefano" 3 4 |> print)
+
+(* open Lib
+
+let d = Date.make_date 1 15 *)
+(* open Lib.Algebra *)
+
+(* let d = Date.make_date 1 15 |> Date.get_day *)
+
+(* let () = Math.add 1 2 |> print_int *)
+
+(* let a = FloatField.( zero + one) *)
