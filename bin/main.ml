@@ -1160,7 +1160,7 @@ module StringWithPrint = struct
   include Print(MyString)
 end
 
-let () = StringWithPrint.(sub "stefano" 3 4 |> print)
+let () = StringWithPrint.(sub "stefano" 3 4 |> print);;
 
 (* open Lib
 
@@ -1172,3 +1172,45 @@ let d = Date.make_date 1 15 *)
 (* let () = Math.add 1 2 |> print_int *)
 
 (* let a = FloatField.( zero + one) *)
+
+(* mutable counter*)
+print_endline "";;
+
+let next_val =
+  let counter = ref 0 in
+    fun () ->
+      incr counter;
+      !counter;;
+
+next_val () |> print_int; print_endline "";;
+next_val () |> print_int; print_endline "";;
+
+(** An ['a node] is a node of a mutable singly-linked list. It contains a value
+    of type ['a] and a link to the [next] node. *)
+type 'a node = { next : 'a mlist; value : 'a }
+
+(** An ['a mlist] is a mutable singly-linked list with elements of type ['a].
+    The [option] represents the possibility that the list is empty.
+    RI: The list does not contain any cycles. *)
+and 'a mlist = 'a node option ref
+
+(** [empty ()] is an empty singly-linked list. *)
+let empty () : 'a mlist = ref None
+
+(** [insert_first lst v] mutates mlist [lst] by inserting value [v] as the
+    first value in the list. *)
+let insert_first (lst : 'a mlist) (v : 'a) : unit =
+  lst := Some { next = ref !lst; value = v }
+
+(** [to_list lst] is an OCaml list containing the same values as [lst]
+    in the same order. Not tail recursive. *)
+let rec to_list (lst : 'a mlist) : 'a list =
+  match !lst with None -> [] | Some { next; value } -> value :: to_list next;;
+
+print_endline "printing list: ";;
+
+let lst0 = empty ();;
+let lst1 = lst0;;
+insert_first lst0 1;;
+to_list lst1 |> print_int_list;;
+
