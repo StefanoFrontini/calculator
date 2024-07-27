@@ -1214,3 +1214,41 @@ let lst1 = lst0;;
 insert_first lst0 1;;
 to_list lst1 |> print_int_list;;
 
+type student7 = {
+  name: string;
+  mutable gpa: float;
+}
+
+let alice = {
+  name = "Alice";
+  gpa = 3.7;
+};;
+
+let () = alice.gpa <- 4.0
+
+let () = print_string("name: " ^ alice.name ^ " gpa: " ^ string_of_float alice.gpa);;
+
+print_endline "";;
+
+
+let x = ref true
+let y = ref [1;2]
+let z = [ref 10]
+
+let rec print_int_ref_list = function
+  [] -> print_string ""
+  | h :: t -> print_int !h; print_int_ref_list t;;
+
+let () = print_string (string_of_bool !x); print_int_list !y; print_int_ref_list z; print_endline "";;
+
+let inc = ref (fun x -> x + 1);;
+
+let () = print_int (!inc 3109); print_endline "";;
+
+
+
+let ( +:= ) x y = x:= !x + y
+
+let x = ref 0;;
+x +:= 3110;;
+let () = print_int(!x)
