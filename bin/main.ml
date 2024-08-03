@@ -1346,8 +1346,8 @@ let () =
   print_float_array a;
   print_endline ""
 
-(* let init_matrix2 n o (f : int -> int -> 'a): 'a array array =
-   let m = Array.make_matrix n o 0 in
+(* let init_matrix2 n o f =
+   let m = Array.make_matrix n o None in
    for i = 0 to n - 1 do
      for j = 0 to o - 1 do
        m.(i).(j) <- f i j
