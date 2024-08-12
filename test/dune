@@ -1,3 +1,13 @@
- (executable
- (name test)
- (libraries ounit2))
+  (test
+ (name maps_test)
+ (libraries ounit2 lib))
+ ; (test
+ ; (name test_product2)
+ ; (libraries ounit2 lib)
+ ; (modules  test_product2)
+ ; )
+ ; (test
+ ; (name test_math)
+ ; (libraries ounit2 lib)
+ ; (modules  test_math)
+ ; )

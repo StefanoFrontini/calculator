@@ -1361,3 +1361,9 @@ let () =
   init_matrix 2 2 (fun x y -> float_of_int x +. float_of_int y)
   |> Array.iter print_float_array;
   print_endline ""
+
+open Lib
+
+let () =
+  let result = Math.add 2 3 in
+  print_endline (string_of_int result)
