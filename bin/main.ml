@@ -1367,3 +1367,71 @@ open Lib
 let () =
   let result = Math.add 2 3 in
   print_endline (string_of_int result)
+
+let t = Node (2, Node (1, Leaf, Leaf), Node (3, Leaf, Leaf))
+
+let () =
+  print_endline "hash function";
+  Hashtbl.hash () |> print_int;
+  print_endline "";
+  Hashtbl.hash 1 |> print_int;
+  print_endline "";
+  Hashtbl.hash 0 |> print_int;
+  print_endline "";
+  Hashtbl.hash "" |> print_int;
+  print_endline "";
+  Hashtbl.hash [] |> print_int;
+  print_endline "";
+  Hashtbl.hash true |> print_int;
+  print_endline "";
+  Hashtbl.hash false |> print_int;
+  print_endline "";
+  Hashtbl.hash t |> print_int;
+  print_endline ""
+
+let ( -- ) i j =
+  let rec from i j l = if i > j then l else from i (j - 1) (j :: l) in
+  from i j []
+
+let tab = Hashtbl.create 16
+let ints = 1 -- 33 |> List.map (fun x -> (x, string_of_int x))
+let () = ints |> List.iter (fun (k, v) -> Hashtbl.add tab k v)
+let () = Hashtbl.find tab 1 |> print_endline
+
+(* let () = Hashtbl.stats tab *)
+
+let bindings h = Hashtbl.fold (fun k v acc -> (k, v) :: acc) h []
+
+let () =
+  print_endline "Hashtabl bindings: ";
+  bindings tab |> print_association_list
+
+let load_factor h =
+  let stats = Hashtbl.stats h in
+  float_of_int stats.num_bindings /. float_of_int stats.num_buckets
+
+let () =
+  load_factor tab |> print_float;
+  print_endline ""
+
+module CaseInsensitive = struct
+  type t = string
+
+  let equal s1 s2 = String.lowercase_ascii s1 = String.lowercase_ascii s2
+  let hash s = Hashtbl.hash (String.lowercase_ascii s)
+end
+
+module HashtblCaseInsensitive = Hashtbl.Make (CaseInsensitive)
+
+module BadHash = Hashtbl.Make (struct
+  type t = int
+
+  let equal = ( = )
+  let hash _ = 0
+end)
+
+let badTab = BadHash.create 16
+let () = ints |> List.iter (fun (k, v) -> BadHash.add badTab k v)
+
+(* The bucket histogram is an array a in which a.(i) is the number of buckets whose size is i. *)
+let () = assert ((BadHash.stats badTab).bucket_histogram.(33) = 1)
