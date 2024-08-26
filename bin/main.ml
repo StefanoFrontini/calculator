@@ -1118,13 +1118,13 @@ functor
     let print x = print_string (M.to_string x)
   end
 
-module Int = struct
+module MyInt = struct
   type t = int
 
   let to_string = string_of_int
 end
 
-module PrintInt = Print (Int)
+module PrintInt = Print (MyInt)
 
 let () = PrintInt.(print 1);;
 
@@ -1435,3 +1435,77 @@ let () = ints |> List.iter (fun (k, v) -> BadHash.add badTab k v)
 
 (* The bucket histogram is an array a in which a.(i) is the number of buckets whose size is i. *)
 let () = assert ((BadHash.stats badTab).bucket_histogram.(33) = 1)
+
+module type SetAbstract = sig
+  (* [elt] is the type of the set elements. *)
+  type elt
+
+  (* [t] is the type of sets whose elements have type [elt]. *)
+  type t
+
+  (* [empty] is the empty set *)
+  val empty : t
+
+  (* [insert x s] is the set ${x} \union s$. *)
+  val insert : elt -> t -> t
+
+  (* [mem x s] is whether $x \in s$. *)
+  val mem : elt -> t -> bool
+
+  (* [of_list lst] is the smallest set containing all the elements of [lst]. *)
+  val of_list : elt list -> t
+
+  (* [elements s] is the list containing the same elements as [s]. *)
+  val elements : t -> elt list
+end
+[@@warning "-34"] [@@warning "-32"]
+
+module type Ordered = sig
+  type t
+
+  val compare : t -> t -> int
+end
+
+module BstSetAbstract (Ord : Ordered) : SetAbstract with type elt = Ord.t =
+struct
+  (* AF:  [Leaf] represents the empty set.  [Node (l, v, r)] represents
+   *   the set $AF(l) \union {v} \union AF(r)$. *)
+  (* RI:  for every [Node (l, v, r)], all the values in [l] are strictly
+   *   less than [v], and all the values in [r] are strictly greater
+   *   than [v]. *)
+
+  type elt = Ord.t
+  type t = Leaf | Node of t * elt * t
+
+  let empty = Leaf
+
+  let rec mem x = function
+    | Leaf -> false
+    | Node (l, v, r) -> (
+        match Ord.compare x v with
+        | ord when ord < 0 -> mem x l
+        | ord when ord > 0 -> mem x r
+        | _ -> true)
+
+  let rec insert x = function
+    | Leaf -> Node (Leaf, x, Leaf)
+    | Node (l, v, r) -> (
+        match Ord.compare x v with
+        | ord when ord < 0 -> Node (insert x l, v, r)
+        | ord when ord > 0 -> Node (l, v, insert x r)
+        | _ -> Node (l, x, r))
+
+  let of_list lst = List.fold_left (fun s x -> insert x s) empty lst
+
+  let rec elements = function
+    | Leaf -> []
+    | Node (l, v, r) -> elements l @ [ v ] @ elements r
+end
+[@@warning "-34"] [@@warning "-32"]
+
+(* An example usage of the functor: *)
+
+module IntSetAbstract = BstSetAbstract (Int)
+
+let () =
+  IntSetAbstract.(empty |> insert 1 |> insert 20 |> elements |> print_int_list)
