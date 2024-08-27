@@ -1509,3 +1509,167 @@ module IntSetAbstract = BstSetAbstract (Int)
 
 let () =
   IntSetAbstract.(empty |> insert 1 |> insert 20 |> elements |> print_int_list)
+
+type 'a tree2 = Leaf | Node of 'a tree2 * 'a * 'a tree2
+
+let rec preorder = function
+  | Leaf -> []
+  | Node (l, v, r) -> [ v ] @ preorder l @ preorder r
+
+let preorderLinear t =
+  let rec go acc = function
+    | Leaf -> acc
+    | Node (l, v, r) -> go (go (v :: acc) l) r
+  in
+  List.rev (go [] t)
+
+let rec inorder = function
+  | Leaf -> []
+  | Node (l, v, r) -> inorder l @ [ v ] @ inorder r
+
+let inorderLinear t =
+  let rec go acc = function
+    | Leaf -> acc
+    | Node (l, v, r) -> go (v :: go acc l) r
+  in
+  List.rev (go [] t)
+
+let rec postorder = function
+  | Leaf -> []
+  | Node (l, v, r) -> postorder l @ postorder r @ [ v ]
+
+let postorderLinear t =
+  let rec go acc = function
+    | Leaf -> acc
+    | Node (l, v, r) -> v :: go (go acc l) r
+  in
+  List.rev (go [] t)
+
+let t =
+  Node
+    ( Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Leaf)),
+      4,
+      Node (Node (Leaf, 5, Leaf), 6, Node (Leaf, 7, Leaf)) )
+
+(*
+    t is
+          4
+        /   \
+       2     6
+      / \   / \
+     1   3 5   7
+  *)
+
+let () = assert (preorderLinear t = [ 4; 2; 1; 3; 6; 5; 7 ])
+let () = assert (preorder t = [ 4; 2; 1; 3; 6; 5; 7 ])
+let () = assert (inorder t = [ 1; 2; 3; 4; 5; 6; 7 ])
+let () = assert (inorderLinear t = [ 1; 2; 3; 4; 5; 6; 7 ])
+let () = assert (postorder t = [ 1; 3; 2; 5; 7; 6; 4 ])
+let () = assert (postorderLinear t = [ 1; 3; 2; 5; 7; 6; 4 ])
+
+(*
+Black height 4:
+            8b
+        /         \
+       4b         12b
+      / \      /      \
+    2b    6b  10b     14b
+   /  \  / \  /  \     / \
+  1b 3b 5b 7b 9b 11b 13b 15b
+  *)
+(*
+Black height 3:
+            8b
+        /         \
+       4r         12r
+      / \      /      \
+    2b    6b  10b     14b
+   /  \  / \  /  \     / \
+  1b 3b 5b 7b 9b 11b 13b 15b
+  *)
+(*
+Black height 2:
+            8b
+        /         \
+       4r         12r
+      / \      /      \
+    2b    6b  10b     14b
+   /  \  / \  /  \     / \
+  1r 3r 5r 7r 9r 11r 13r 15r
+  *)
+(*
+RB draw insert:
+            Db
+        /         \
+       Ar         Tr
+      / \      /      \
+    xx    xx  Sr      xx
+   /  \  / \  /  \     / \
+  xx xx xx xx xx xx xx xx
+
+rotate:
+            Sr
+        /         \
+       Db         Tb
+      / \      /      \
+    Ar    xx  xx      xx
+   /  \  / \  /  \     / \
+  xx xx xx xx xx xx xx xx
+
+insert R:
+            Sr
+        /         \
+       Db         Tb
+      / \      /      \
+    Ar    Rr  xx      xx
+   /  \  / \  /  \     / \
+  xx xx xx xx xx xx xx xx
+
+insert U and C:
+            Sr
+        /         \
+       Db         Tb
+      / \      /      \
+    Ar    Rr  xx      Ur
+   /  \  / \  /  \     / \
+  xx Cr xx xx xx xx xx xx
+
+rotate:
+            Sr
+        /         \
+       Cr         Tb
+      / \      /      \
+    Ab    Db  xx      Ur
+   /  \  / \  /  \     / \
+  xx xx xx Rr xx xx xx xx
+
+insert E:
+            Sr
+        /         \
+       Cr         Tb
+      / \      /      \
+    Ab    Db  xx      Ur
+   /  \  / \  /  \     / \
+  xx xx xx Rr xx xx xx xx
+          /
+         Er
+
+rotate:
+            Sr
+        /         \
+       Cr         Tb
+      / \      /      \
+    Ab    Er  xx      Ur
+   /  \  / \  /  \     / \
+  xx xx Db Rb xx xx xx xx
+          /
+         xx
+rotate and change color root node:
+            Eb
+        /         \
+       Cr         Sr
+      / \      /      \
+    Ab    Db  Rb      Tb
+   /  \  / \  /  \     / \
+  xx xx xx xx xx xx xx xx Ur
+  *)
