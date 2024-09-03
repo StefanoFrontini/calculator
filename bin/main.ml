@@ -1673,3 +1673,170 @@ rotate and change color root node:
    /  \  / \  /  \     / \
   xx xx xx xx xx xx xx xx Ur
   *)
+
+(* let rec ones = 1 :: ones
+   let () = print_int_list ones *)
+
+(** An ['a sequence] is an infinite list of values of type ['a].
+AF: [Cons (x, f)] is the sequence whose head is [x] and tail is [f ()].
+RI: none.  *)
+type 'a sequence = Cons of 'a * (unit -> 'a sequence)
+
+let rec from n = Cons (n, fun () -> from (n + 1))
+let nats = from 0
+
+(** [hd s] is the head of [s] *)
+let hd (Cons (h, _)) = h
+
+let zero = hd nats
+
+let () =
+  print_int zero;
+  print_endline ""
+
+(** [tl s] is the tail of [s] *)
+let tl (Cons (_, t)) = t ()
+
+let rec take n s = if n = 0 then [] else hd s :: take (n - 1) (tl s)
+let () = print_int_list (take 10 nats)
+
+(** [drop n s] is all but the first [n] elements of [s]. *)
+let rec drop n s = if n = 0 then s else drop (n - 1) (tl s)
+
+(* let rec filter acc p s = if p (hd s) then Cons (hd s, acc) else tl s *)
+
+(** [square <a;b;c; ...>] is [<a*a; b*b; c*c; ...>] *)
+let rec square (Cons (h, t)) = Cons (h * h, fun () -> square (t ()))
+[@@warning "-34"] [@@warning "-32"]
+
+(** [sum <a1; a2; a3; ...> <b1; b2; b3; ...>] is [<a1 + b1; a2 + b2; a3 + b3; ...>] *)
+let rec sum (Cons (h1, t1)) (Cons (h2, t2)) =
+  Cons (h1 + h2, fun () -> sum (t1 ()) (t2 ()))
+
+(** [map f <a; b; c; ...>] is [<f a; f b; f c; ...>]. *)
+let rec map f (Cons (h, t)) = Cons (f h, fun () -> map f (t ()))
+
+(** [map2 f <a1; b1; c1; ...> <a2; b2; c2; ...>] is [<f a1 b1; f a2 b2; f a3 b3; ...>] *)
+let rec map2 f (Cons (h1, t1)) (Cons (h2, t2)) =
+  Cons (f h1 h2, fun () -> map2 f (t1 ()) (t2 ()))
+[@@warning "-34"] [@@warning "-32"]
+
+let rec nats = Cons (0, fun () -> map (fun x -> x + 1) nats)
+[@@warning "-34"] [@@warning "-32"]
+
+let rec fibs = Cons (1, fun () -> Cons (1, fun () -> sum fibs (tl fibs)))
+
+let () =
+  print_endline "Fibonacci";
+  print_int (take 10 fibs |> List.rev |> List.hd);
+  print_endline ""
+
+let fib30lazy = lazy (take 30 fibs |> List.rev |> List.hd)
+[@@warning "-34"] [@@warning "-32"]
+(* let fib30 = Lazy.force fib30lazy *)
+
+(* pow2 : int sequence *)
+let rec power x n = if n = 0 then 1 else x * power x (n - 1)
+let power2 = power 2
+let () = print_int (power2 4)
+
+(* let rec pow2sequence (Cons (h, t)) =
+   Cons (power2 h, fun () -> pow2sequence (t ())) *)
+
+(* let pow2 = pow2sequence nats *)
+
+(**
+ * [pow2from n] is the sequence of powers of 2 starting with [n].
+ * example:  [pow2from 4] is <4;8;16;32;...>.
+ * requires: [n] is a power of 2
+*)
+let rec pow2from n = Cons (n, fun () -> pow2from (2 * n))
+(* let rec from n = Cons (n, fun () -> from (n + 1)) *)
+
+(**
+ * [pow2] is the sequence <1; 2; 4; 8; 16; ...>.
+*)
+let pow2 = pow2from 1
+
+let () =
+  print_endline "pow2:";
+  print_int_list (take 10 pow2)
+
+let () =
+  print_endline "modulo: ";
+  print_int (97 + ((1122 - 97) mod 25));
+  print_endline ""
+
+let evenNaturals = map (fun x -> 2 * x) nats
+
+let () =
+  print_endline "even naturals";
+  print_int_list (take 10 evenNaturals)
+
+(** [from_skip n k] is the sequence <n; n + 1*k, n + 2*k;...> *)
+let rec from_skip n k = Cons (n, fun () -> from_skip (n + k) k)
+
+let evens = from_skip 0 2 [@@warning "-34"] [@@warning "-32"]
+let dropped_sequence = drop 97 nats [@@warning "-34"] [@@warning "-32"]
+
+let alphabet = map (fun x -> Char.chr (97 + ((x - 97) mod 26))) dropped_sequence
+[@@warning "-34"] [@@warning "-32"]
+
+let rec alphabet_gen n =
+  Cons (Char.chr ((n mod 26) + Char.code 'a'), fun () -> alphabet_gen (n + 1))
+
+let alphabet2 = alphabet_gen 0
+
+let () =
+  print_endline "alphabet:";
+  take 30 alphabet2 |> List.iter print_char
+
+let rec random_coin_flips () =
+  Cons (Random.bool (), fun () -> random_coin_flips ())
+
+let () =
+  print_endline "random_coin_flip";
+  take 10 (random_coin_flips ())
+  |> List.iter (fun x -> x |> string_of_bool |> print_string)
+
+let rec nth s n = if n = 0 then hd s else nth (tl s) (n - 1)
+
+let () =
+  print_endline "nth: ";
+  print_int (nth pow2 0)
+
+let rec filter p s =
+  if p (hd s) then Cons (hd s, fun () -> filter p (tl s)) else filter p (tl s)
+
+let even3 = filter (fun n -> n mod 2 = 0) nats
+
+let () =
+  print_endline "even3: ";
+  print_int_list (take 10 even3)
+
+let rec interleave (Cons (h1, t1)) (Cons (h2, t2)) =
+  Cons (h1, fun () -> Cons (h2, fun () -> interleave (t1 ()) (t2 ())))
+
+let natsPow2 = interleave nats pow2
+
+let () =
+  print_endline "natsPow2";
+  print_int_list (take 10 natsPow2)
+
+let dropped_zero_one = drop 2 nats [@@warning "-34"] [@@warning "-32"]
+let sift n s = filter (fun x -> x mod n <> 0) s
+let sift_2 = sift 2 dropped_zero_one
+
+(* let (Cons(h,t)) = sift_2 in  *)
+
+let () =
+  print_endline "sift:";
+  print_int_list (take 10 sift_2)
+
+(* let rec sieve s = sieve (sift (hd s) s) *)
+let rec sieve s = Cons (hd s, fun () -> sieve (sift (hd s) (tl s)))
+let prime = sieve dropped_zero_one
+
+let () =
+  print_endline "prime: ";
+  print_int_list (take 20 prime)

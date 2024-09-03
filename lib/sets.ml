@@ -47,3 +47,41 @@ module BstSet : Set = struct
         else if x > v then Node (l, v, insert x r)
         else n
 end
+
+module RbSet : Set = struct
+  type color = Red | Blk
+
+  (** AF: [Leaf] represents the empty set. [Node (c,l,v,r)] represents the set containing [v], as well as all the elements of the sets represented by [l] and [r].
+  RI: The BST invariant holds and the local and global RB tree invariants hold.
+  *)
+  type 'a t = Leaf | Node of (color * 'a t * 'a * 'a t)
+
+  let empty = Leaf
+
+  (** Efficiency: O(log n) *)
+  let rec mem x = function
+    | Leaf -> false
+    | Node (_, l, v, r) ->
+        if x < v then mem x l else if x > v then mem x r else true
+
+  let balance = function
+    | Blk, Node (Red, Node (Red, a, x, b), y, c), z, d
+    | Blk, Node (Red, a, x, Node (Red, b, y, c)), z, d
+    | Blk, a, x, Node (Red, Node (Red, b, y, c), z, d)
+    | Blk, a, x, Node (Red, b, y, Node (Red, c, z, d)) ->
+        Node (Red, Node (Blk, a, x, b), y, Node (Blk, c, z, d))
+    | t -> Node t
+
+  let rec insert_aux x = function
+    | Leaf -> Node (Red, Leaf, x, Leaf)
+    | Node (c, l, v, r) as n ->
+        if x < v then balance (c, insert_aux x l, v, r)
+        else if x > v then balance (c, l, v, insert_aux x r)
+        else n
+
+  let insert x s =
+    match insert_aux x s with
+    | Leaf -> failwith "impossible" (* [insert_aux] cannot return [Leaf]*)
+    | Node (_, l, v, r) -> Node (Blk, l, v, r)
+  (* color root black*)
+end
