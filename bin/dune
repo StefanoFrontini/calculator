@@ -1,5 +1,5 @@
 (executable
  (public_name calculator)
  (name main)
- (libraries lib)
+ (libraries lib lwt.unix)
  )

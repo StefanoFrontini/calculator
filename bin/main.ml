@@ -1840,3 +1840,115 @@ let prime = sieve dropped_zero_one
 let () =
   print_endline "prime: ";
   print_int_list (take 20 prime)
+;;
+
+(* open Lwt_io
+
+   let (p : string Lwt.t), r = Lwt.wait ()
+   let p2 = Lwt.bind p (fun i -> Lwt.return (String.length i)) *)
+(* let p =
+     Lwt.bind (read_line stdin) (fun s1 ->
+         Lwt.bind (read_line stdin) (fun s2 -> Lwt_io.printf "%s\n" (s1 ^ s2)))
+
+   let _ = Lwt_main.run p *)
+print_endline "Promises:"
+
+(* open Promise
+
+
+   let p, r = Promise.make () [@@warning "-34"] [@@warning "-32"]
+
+   let print_content x =
+     print_int x;
+     Promise.return ()
+
+   let p2 = Promise.( >>= ) p print_content [@@warning "-34"] [@@warning "-32"]
+   let () = Promise.fulfill r 1 *)
+(* let () =
+   match Promise.state p2 with
+   | Pending -> print_string "Pending"
+   | Rejected _ -> failwith "Rejected"
+   | Fulfilled _ -> print_string "Fulfilled" *)
+(* open Promise
+
+   let () =
+     let p, r = Promise.make () in
+     let _ =
+       Promise.( >>= ) p (fun i ->
+           Printf.printf "%i\n" i;
+           Promise.return ())
+     in
+     Promise.fulfill r 42 *)
+
+module LwtExercises = struct
+  (* let () =
+       let p, r = Lwt.wait () in
+       let _ = Lwt.bind p (fun i -> Lwt_io.printf "%i\n" i) in
+       Lwt.wakeup_later r 42
+
+     let delay (sec : float) : unit Lwt.t = Lwt_unix.sleep sec
+     let delay_then_print () = Lwt.bind (delay 3.0) (fun _ -> Lwt_io.printl "done")
+     let _ = Lwt_main.run (delay_then_print ()) *)
+
+  (* open Lwt.Infix
+
+     let delay (sec : float) : unit Lwt.t = Lwt_unix.sleep sec *)
+
+  (* let timing2 () =
+       let _t1 = delay 1. >>= fun () -> Lwt_io.printl "1" in
+       let _t2 = delay 10. >>= fun () -> Lwt_io.printl "2" in
+       let _t3 = delay 20. >>= fun () -> Lwt_io.printl "3" in
+       Lwt_io.printl "all done"
+     [@@warning "-34"] [@@warning "-32"]
+
+     let _ = Lwt_main.run (timing2 ()) *)
+
+  (* let timing3 () =
+       delay 1. >>= fun () ->
+       Lwt_io.printl "1" >>= fun () ->
+       delay 10. >>= fun () ->
+       Lwt_io.printl "2" >>= fun () ->
+       delay 20. >>= fun () ->
+       Lwt_io.printl "3" >>= fun () -> Lwt_io.printl "all done"
+
+     let _ = Lwt_main.run (timing3 ()) *)
+
+  (* let timing4 () =
+       let t1 = delay 1. >>= fun () -> Lwt_io.printl "1" in
+       let t2 = delay 10. >>= fun () -> Lwt_io.printl "2" in
+       let t3 = delay 20. >>= fun () -> Lwt_io.printl "3" in
+       Lwt.join [ t1; t2; t3 ] >>= fun () -> Lwt_io.printl "all done"
+
+     let _ = Lwt_main.run (timing4 ()) *)
+
+  open Lwt.Infix
+  open Lwt_io
+  open Lwt_unix
+
+  (** [log ()] is a promise for an [input_channel] that reads from
+    the file named "log". *)
+  let log () : input_channel Lwt.t =
+    openfile "log" [ O_RDONLY ] 0 >>= fun fd ->
+    Lwt.return (of_fd ~mode:input fd)
+
+  (** [loop ic] reads one line from [ic], prints it to stdout,
+    then calls itself recursively. It is an infinite loop. *)
+  let rec loop (ic : input_channel) =
+    read_line ic >>= fun str ->
+    printlf "%s" str >>= fun () -> loop ic
+  (* hint: use [Lwt_io.read_line] and [Lwt_io.printlf] *)
+
+  (** [monitor ()] monitors the file named "log". *)
+  let monitor () : unit Lwt.t = log () >>= loop
+
+  (** [handler] is a helper function for [main]. If its input is
+    [End_of_file], it handles cleanly exiting the program by
+    returning the unit promise. Any other input is re-raised
+    with [Lwt.fail]. *)
+  let handler : exn -> unit Lwt.t = function
+    | End_of_file -> Lwt.return ()
+    | exc -> Lwt.fail exc
+
+  let main () : unit Lwt.t = Lwt.catch monitor handler
+  let _ = Lwt_main.run (main ())
+end
