@@ -103,3 +103,27 @@ let dec_log x = (x - 1, Printf.sprintf "Called dec on %i; " x)
 
 let log (name : string) (f : int -> int) : int -> int * string =
  fun x -> (f x, Printf.sprintf "Called %s on %i; " name x)
+
+let add (x : int Maybe.t) (y : int Maybe.t) =
+  Maybe.( >>= ) x (fun a -> Maybe.( >>= ) y (fun b -> Maybe.return (a + b)))
+
+module type ExtMonad = sig
+  type 'a t
+
+  val return : 'a -> 'a t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( >>| ) : 'a t -> ('a -> 'b) -> 'b t
+  val join : 'a t t -> 'a t
+end
+
+module ExtMaybe : ExtMonad = struct
+  type 'a t = 'a option
+
+  let return x = Some x
+  let ( >>= ) m f = match m with None -> None | Some x -> f x
+  (* let ( >>| ) m f = match m with None -> None | Some x -> Some (f x)
+     let join = function Some x -> x | None -> None *)
+
+  let ( >>| ) m f = m >>= fun a -> return (f a)
+  let join m = m >>= fun a -> a
+end
