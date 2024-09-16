@@ -1,4 +1,3 @@
-
 (** A signature for Lwt-style promises, with better names. *)
 module type PROMISE = sig
   type 'a state = Pending | Fulfilled of 'a | Rejected of exn
@@ -30,7 +29,7 @@ module Promise : PROMISE = struct
   type 'a state = Pending | Fulfilled of 'a | Rejected of exn
 
   type 'a handler = 'a state -> unit
-  (** RI: the input may not br [Pending]. *)
+  (** RI: the input may not be [Pending]. *)
 
   type 'a promise = {
     mutable state : 'a state;
@@ -66,13 +65,13 @@ module Promise : PROMISE = struct
   let reject r x = fulfill_or_reject r (Rejected x)
 
   let handler (resolver : 'a resolver) : 'a handler = function
-    | Pending -> failwith "handler RI violeted"
+    | Pending -> failwith "handler RI violated"
     | Rejected exc -> reject resolver exc
     | Fulfilled x -> fulfill resolver x
 
   let handler_of_callback (callback : 'a -> 'b promise) (resolver : 'b resolver)
       : 'a handler = function
-    | Pending -> failwith "handler RI violeted"
+    | Pending -> failwith "handler RI violated"
     | Rejected exc -> reject resolver exc
     | Fulfilled x -> (
         let promise = callback x in
