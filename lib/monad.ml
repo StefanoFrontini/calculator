@@ -116,6 +116,15 @@ module type ExtMonad = sig
   val join : 'a t t -> 'a t
 end
 
+module Maybe : ExtMonad = struct
+  type 'a t = 'a option
+
+  let return x = Some x
+  let ( >>= ) m f = match m with Some x -> f x | None -> None
+  let ( >>| ) m f = match m with Some x -> Some (f x) | None -> None
+  let join = function Some m -> m | None -> None
+end
+
 module ExtMaybe : ExtMonad = struct
   type 'a t = 'a option
 
@@ -126,4 +135,28 @@ module ExtMaybe : ExtMonad = struct
 
   let ( >>| ) m f = m >>= fun a -> return (f a)
   let join m = m >>= fun a -> a
+end
+
+module type FmapJoinMonad = sig
+  type 'a t
+
+  val ( >>| ) : 'a t -> ('a -> 'b) -> 'b t
+  val join : 'a t t -> 'a t
+  val return : 'a -> 'a t
+end
+
+module type BindMonad = sig
+  type 'a t
+
+  val return : 'a -> 'a t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module MakeMonad (M : FmapJoinMonad) : BindMonad = struct
+  include M
+
+  let ( >>= ) m f = m >>| f |> join
+  (* type 'a t = 'a M.t
+     let return x = M.return x
+     let ( >>= ) m f = M.join(M.(>>|) m f) *)
 end
