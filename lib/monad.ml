@@ -174,3 +174,24 @@ module MakeMonad (M : FmapJoinMonad) : BindMonad = struct
      let return x = M.return x
      let ( >>= ) m f = M.join(M.(>>|) m f) *)
 end
+
+module ListMonad : ExtMonad = struct
+  type 'a t = 'a list
+
+  let return x = [ x ]
+  let join = List.flatten
+  let ( >>| ) m f = m |> List.map f
+
+  (* let ( >>= ) m f = m >>| f |> join *)
+  let ( >>= ) m f = m |> List.map f |> join
+end
+
+module Trivial : Monad = struct
+  type 'a t = Wrap of 'a
+
+  let return x = Wrap x
+  let join (Wrap (Wrap x)) = Wrap x
+
+  (* let ( >>= ) (Wrap x) f = join(Wrap (f x)) *)
+  let ( >>= ) (Wrap x) f = f x
+end
