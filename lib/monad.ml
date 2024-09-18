@@ -10,28 +10,28 @@ let plus_opt (x : int option) (y : int option) : int option =
   | None, _ | _, None -> None
   | Some a, Some b -> Some (Stdlib.( + ) a b)
 
-let ( + ) = plus_opt
+let ( + ) = plus_opt [@@warning "-34"] [@@warning "-32"]
 
 let minus_opt (x : int option) (y : int option) : int option =
   match (x, y) with
   | None, _ | _, None -> None
   | Some a, Some b -> Some (Stdlib.( - ) a b)
 
-let ( - ) = minus_opt
+let ( - ) = minus_opt [@@warning "-34"] [@@warning "-32"]
 
 let mult_opt (x : int option) (y : int option) : int option =
   match (x, y) with
   | None, _ | _, None -> None
   | Some a, Some b -> Some (Stdlib.( * ) a b)
 
-let ( * ) = mult_opt
+let ( * ) = mult_opt [@@warning "-34"] [@@warning "-32"]
 
 let div_opt (x : int option) (y : int option) : int option =
   match (x, y) with
   | None, _ | _, None -> None
   | Some a, Some b -> if b = 0 then None else Some (Stdlib.( / ) a b)
 
-let ( / ) = div_opt
+let ( / ) = div_opt [@@warning "-34"] [@@warning "-32"]
 
 let propagate_none (op : int -> int -> int option) (x : int option)
     (y : int option) =
@@ -41,13 +41,18 @@ let wrap_output (op : int -> int -> int) (x : int) (y : int) : int option =
   Some (op x y)
 
 let ( + ) = propagate_none (wrap_output Stdlib.( + ))
+[@@warning "-34"] [@@warning "-32"]
+
 let ( - ) = propagate_none (wrap_output Stdlib.( - ))
+[@@warning "-34"] [@@warning "-32"]
+
 let ( * ) = propagate_none (wrap_output Stdlib.( * ))
+[@@warning "-34"] [@@warning "-32"]
 
 let div (x : int) (y : int) : int option =
   if y = 0 then None else wrap_output Stdlib.( / ) x y
 
-let ( / ) = propagate_none div
+let ( / ) = propagate_none div [@@warning "-34"] [@@warning "-32"]
 let return (x : int) : int option = Some x
 
 let bind (x : int option) (op : int -> int option) : int option =
@@ -63,18 +68,22 @@ let ( >>= ) = bind
 let ( + ) (x : int option) (y : int option) : int option =
   x >>= fun a ->
   y >>= fun b -> return (Stdlib.( + ) a b)
+[@@warning "-34"] [@@warning "-32"]
 
 let ( - ) (x : int option) (y : int option) : int option =
   x >>= fun a ->
   y >>= fun b -> return (Stdlib.( - ) a b)
+[@@warning "-34"] [@@warning "-32"]
 
 let ( * ) (x : int option) (y : int option) : int option =
   x >>= fun a ->
   y >>= fun b -> return (Stdlib.( * ) a b)
+[@@warning "-34"] [@@warning "-32"]
 
 let ( / ) (x : int option) (y : int option) : int option =
   x >>= fun a ->
   y >>= fun b -> if b = 0 then None else return (Stdlib.( / ) a b)
+[@@warning "-34"] [@@warning "-32"]
 
 let upgrade_binary op x y =
   x >>= fun a ->
@@ -82,9 +91,14 @@ let upgrade_binary op x y =
 
 let return_binary op x y = return (op x y)
 let ( + ) = upgrade_binary (return_binary Stdlib.( + ))
+
 let ( - ) = upgrade_binary (return_binary Stdlib.( - ))
+[@@warning "-34"] [@@warning "-32"]
+
 let ( * ) = upgrade_binary (return_binary Stdlib.( * ))
-let ( / ) = upgrade_binary div
+[@@warning "-34"] [@@warning "-32"]
+
+let ( / ) = upgrade_binary div [@@warning "-34"] [@@warning "-32"]
 let a = Some 1 + Some 2
 
 module Maybe : Monad = struct
@@ -116,7 +130,7 @@ module type ExtMonad = sig
   val join : 'a t t -> 'a t
 end
 
-module Maybe : ExtMonad = struct
+module MaybeExt : ExtMonad = struct
   type 'a t = 'a option
 
   let return x = Some x
