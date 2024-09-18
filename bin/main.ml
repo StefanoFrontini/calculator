@@ -1,3 +1,5 @@
+[@@@ocaml.warnings "-34-32"]
+
 let num = 7 * (1 + 2 + 3);;
 
 num |> string_of_int |> print_endline;
@@ -1952,3 +1954,11 @@ module LwtExercises = struct
   let main () : unit Lwt.t = Lwt.catch monitor handler
   let _ = Lwt_main.run (main ())
 end
+
+let inc_log x = (x + 1, Printf.sprintf "Called inc on %i; " x)
+
+let dec_log x = (x - 1, Printf.sprintf "Called dec on %i; " x)
+[@@warning "-34"] [@@warning "-32"]
+;;
+
+inc_log 1

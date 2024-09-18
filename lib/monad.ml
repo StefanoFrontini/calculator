@@ -195,3 +195,4 @@ module Trivial : Monad = struct
   (* let ( >>= ) (Wrap x) f = join(Wrap (f x)) *)
   let ( >>= ) (Wrap x) f = f x
 end
+[@@warning "-34"] [@@warning "-32"]
