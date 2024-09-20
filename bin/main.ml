@@ -1977,10 +1977,49 @@ module WriterMonad : Monad = struct
 
   let join ((x, s2), s1) = (x, s1 ^ s2)
   let ( >>= ) (x, s1) f = (f x, s1) |> join
+
+  (* let ( >>| ) m f = m >>= fun a -> return (f a) *)
   let num, str = 1 |> inc_log >>= dec_log >>= dec_log >>= dec_log
 
   let () =
     num |> print_int;
     print_string "-";
-    str |> print_string
+    str |> print_string;
+    print_endline "";
+    print_endline "loggable: "
+
+  let log (name : string) (f : int -> int) : int -> int * string =
+   fun x -> (f x, Printf.sprintf "Called %s on %i; " name x)
+
+  let loggable (name : string) (f : int -> int) : int * string -> int * string =
+   fun m -> m >>= log name f
+
+  let inc x = x + 1
+  let dec x = x - 1
+  let inc' = loggable "inc" inc
+  let dec' = loggable "dec" dec
+  let num, str = return 2 |> inc' |> inc' |> dec'
+
+  let () =
+    num |> print_int;
+    print_string "-";
+    str |> print_string;
+    print_endline "";
+    print_endline "loggable2: "
+
+  let num, str = return 5 >>= log "inc" inc >>= log "inc" inc >>= log "dec" dec
+
+  let () =
+    num |> print_int;
+    print_string "-";
+    str |> print_string;
+    print_endline ""
+
+  (* let num, str = return 10 >>| inc
+
+     let () =
+       num |> print_int;
+       print_string "-";
+       str |> print_string;
+       print_endline "" *)
 end
